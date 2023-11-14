@@ -8,17 +8,16 @@ class Student extends Model
 {
     protected $fillable = [
         'name',
-        'email',
-        'class_id'
+        'email'
     ];
 
-    public function course()
+    public function attendedLectures()
     {
-        return $this->belongsTo(Course::class);
+        return $this->belongsToMany(Lecture::class, 'attended_lectures', 'student_id', 'lecture_id')->withTimestamps();
     }
 
-    public function lectures()
+    public function groups()
     {
-        return $this->belongsToMany(Lecture::class, 'student_lecture', 'student_id', 'lecture_id');
+        return $this->belongsToMany(Group::class, 'group_members', 'student_id', 'group_id')->withTimestamps();
     }
 }
