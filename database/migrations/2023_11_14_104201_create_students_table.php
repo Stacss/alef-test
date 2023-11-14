@@ -13,12 +13,9 @@ class CreateStudentsTable extends Migration
      */
     public function up()
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->unsignedBigInteger('class_id')->nullable();
-            $table->foreign('class_id')->references('id')->on('classes')->onDelete('set null');
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }

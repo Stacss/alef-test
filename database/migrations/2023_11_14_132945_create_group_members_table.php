@@ -13,12 +13,14 @@ class CreateStudentLectureTable extends Migration
      */
     public function up()
     {
-        Schema::create('student_lecture', function (Blueprint $table) {
+        Schema::create('group_members', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('student_id');
-            $table->unsignedBigInteger('lecture_id');
+            $table->unsignedBigInteger('group_id');
+            $table->timestamps();
+
             $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
-            $table->foreign('lecture_id')->references('id')->on('lectures')->onDelete('cascade');
-            $table->primary(['student_id', 'lecture_id']);
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
         });
     }
 
