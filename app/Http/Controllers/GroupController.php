@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Group;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+
+class GroupController extends Controller
+{
+    /**
+     * @OA\Post(
+     *      path="/api/groups",
+     *      operationId="createGroup",
+     *      tags={"Groups"},
+     *      summary="Create a new group",
+     *      description="Create a new group with the given name.",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Group data",
+     *          @OA\JsonContent(
+     *              required={"name"},
+     *              @OA\Property(property="name", type="string", example="Math Class"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Group created successfully"),
+     *          )
+     *      ),
+     *     @OA\Response(
+     *     response=422,
+     *     description="Validation error",
+     *     @OA\JsonContent(
+     *         @OA\Property(property="message", type="string", example="Validation error"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error creating group",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error creating group"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function store(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'name' => 'required|string|max:255|unique:groups,name',
+            ]);
+
+            $group = Group::create($request->only(['name']));
+
+            return response()->json(['message' => 'Group created successfully', 'data' => $group], 201);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error creating group', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update the specified group.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Group  $group
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Put(
+     *      path="/api/groups/{group}",
+     *      operationId="updateGroup",
+     *      tags={"Groups"},
+     *      summary="Update an existing group",
+     *      description="Update the name of an existing group.",
+     *      @OA\Parameter(
+     *          name="group",
+     *          in="path",
+     *          description="ID of the group to be updated",
+     *          required=true,
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Group data",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="name", type="string", example="New Math Class Name"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Group updated successfully"),
+     *          )
+     *      ),
+     *     @OA\Response(
+     *          response=422,
+     *          description="Validation error",
+     *     @OA\JsonContent(
+     *         @OA\Property(property="message", type="string", example="Validation error"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error updating group",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error updating group"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function update(Request $request, Group $group)
+    {
+        try {
+            $this->validate($request, [
+                'name' => 'required|string|max:255|unique:groups',
+            ]);
+
+            $group->update(['name' => $request->input('name')]);
+
+            return response()->json(['message' => 'Group updated successfully', 'data' => $group]);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error updating group', 'error' => $e->getMessage()], 500);
+        }
+    }
+}

@@ -11,7 +11,7 @@ use Illuminate\Routing\Controller as BaseController;
  * @OA\Info(
  *      version="1.0.0",
  *      title="Alef-test Api",
- *      description="L5 Swagger OpenApi description Alef-test",
+ *      description="Alef-test instruction",
  *      @OA\Contact(
  *          email="postnikov.sa@ya.ru"
  *      )
