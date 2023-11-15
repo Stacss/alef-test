@@ -210,4 +210,43 @@ class GroupController extends Controller
             return response()->json(['message' => 'Error retrieving groups', 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * @OA\Get(
+     *      path="/api/groups/{group}",
+     *      operationId="getGroup",
+     *      tags={"Groups"},
+     *      summary="Get information about a specific group",
+     *      description="Retrieve information about a specific group, including its name and the students in the group with attended lectures.",
+     *      @OA\Parameter(
+     *          name="group",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the group",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error retrieving group information",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error retrieving group information"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function show(Group $group)
+    {
+        try {
+            $group->load('members');
+
+            return response()->json(['data' => $group], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error retrieving group information', 'error' => $e->getMessage()], 500);
+        }
+    }
 }
