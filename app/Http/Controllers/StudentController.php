@@ -219,4 +219,41 @@ class StudentController extends Controller
             return response()->json(['message' => 'Error deleting student', 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * @OA\Get(
+     *      path="/api/students",
+     *      operationId="getStudents",
+     *      tags={"Students"},
+     *      summary="Get a list of all students",
+     *      description="Get a paginated list of all students.",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error fetching students",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error fetching students"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     *
+     * Get a paginated list of all students.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getStudents()
+    {
+        try {
+            $students = Student::all();
+
+            return response()->json(['students' => $students], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error fetching students', 'error' => $e->getMessage()], 500);
+        }
+    }
+
 }
