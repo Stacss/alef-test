@@ -131,4 +131,83 @@ class GroupController extends Controller
             return response()->json(['message' => 'Error updating group', 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/groups/{id}",
+     *      operationId="deleteGroup",
+     *      tags={"Groups"},
+     *      summary="Delete a group",
+     *      description="Delete a group by its ID. Students associated with the group will be detached but not deleted from the system.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          required=true,
+     *          in="path",
+     *          description="ID of the group to be deleted",
+     *          @OA\Schema(
+     *              type="integer",
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Group deleted successfully"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error deleting group",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error deleting group"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function destroy(Group $group)
+    {
+        try {
+            $group->members()->detach();
+
+            $group->delete();
+
+            return response()->json(['message' => 'Group deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error deleting group', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/groups",
+     *      operationId="getGroups",
+     *      tags={"Groups"},
+     *      summary="Get a list of all groups",
+     *      description="Retrieve a list of all groups in the system.",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error retrieving groups",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error retrieving groups"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function index()
+    {
+        try {
+            $groups = Group::all();
+
+            return response()->json(['data' => $groups], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error retrieving groups', 'error' => $e->getMessage()], 500);
+        }
+    }
 }

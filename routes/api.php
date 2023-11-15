@@ -27,6 +27,9 @@ Route::get('/students/{student}', 'StudentController@getStudent');
 
 Route::post('/groups', 'GroupController@store');
 Route::put('/groups/{group}', 'GroupController@update');
+Route::delete('/groups/{group}', 'GroupController@destroy');
+Route::get('/groups', 'GroupController@index');
+
 
 
 
