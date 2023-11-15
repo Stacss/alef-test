@@ -241,7 +241,7 @@ class StudentController extends Controller
      *      ),
      * )
      *
-     * Get a paginated list of all students.
+     * Get a list of all students.
      *
      * @return \Illuminate\Http\JsonResponse
      */
