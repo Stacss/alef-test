@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StudentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,3 +20,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('/students', 'StudentController@store');
+Route::put('/students/{id}', 'StudentController@update');
+Route::delete('/students/{student}', [StudentController::class, 'deleteStudent']);
+
