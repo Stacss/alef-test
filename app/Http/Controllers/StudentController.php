@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\StudentService;
 use App\Student;
-use Dotenv\Exception\ValidationException;
+use \Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -119,13 +119,6 @@ class StudentController extends Controller
      *                  @OA\Property(property="created_at", type="string", format="date-time", example="2023-01-01 12:00:00"),
      *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2023-01-01 12:00:00"),
      *              ),
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Student not found",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Student not found"),
      *          )
      *      ),
      *      @OA\Response(
@@ -255,5 +248,45 @@ class StudentController extends Controller
             return response()->json(['message' => 'Error fetching students', 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * @OA\Get(
+     *      path="/api/students/{student}",
+     *      operationId="getStudent",
+     *      tags={"Students"},
+     *      summary="Get information about a specific student",
+     *      description="Retrieve information about a specific student including their name, email, associated group, and attended lectures.",
+     *      @OA\Parameter(
+     *          name="student",
+     *          in="path",
+     *          description="ID of the student",
+     *          required=true,
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error fetching student information",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error fetching student information"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function getStudent(Student $student)
+    {
+        try {
+            $student = $student->load('groups', 'attendedLectures');
+
+            return response()->json(['student' => $student], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error fetching student information', 'error' => $e->getMessage()], 500);
+        }
+    }
+
 
 }

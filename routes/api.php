@@ -23,5 +23,7 @@ Route::post('/students', 'StudentController@store');
 Route::put('/students/{id}', 'StudentController@update');
 Route::delete('/students/{student}', [StudentController::class, 'deleteStudent']);
 Route::get('/students', 'StudentController@getStudents');
+Route::get('/students/{student}', 'StudentController@getStudent');
+
 
 
