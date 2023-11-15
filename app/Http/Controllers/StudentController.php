@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\StudentService;
 use App\Student;
+use Dotenv\Exception\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 /**
@@ -12,6 +15,12 @@ use Illuminate\Http\Request;
  */
 class StudentController extends Controller
 {
+    protected $studentService;
+
+    public function __construct(StudentService $studentService)
+    {
+        $this->studentService = $studentService;
+    }
     /**
      * @OA\Post(
      *      path="/api/students",
@@ -69,6 +78,145 @@ class StudentController extends Controller
             return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error creating student', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *      path="/api/students/{id}",
+     *      operationId="updateStudent",
+     *      tags={"Students"},
+     *      summary="Update a student",
+     *      description="Update a student's name, email, and/or class affiliation.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Student ID",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Student data",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="name", type="string", example="Updated Name"),
+     *              @OA\Property(property="email", type="string", format="email", example="updated@example.com"),
+     *              @OA\Property(property="group_id", type="integer", example=1, description="Group ID to which the student belongs"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Student updated successfully"),
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Updated Name"),
+     *                  @OA\Property(property="email", type="string", format="email", example="updated@example.com"),
+     *                  @OA\Property(property="group_id", type="integer", example=1),
+     *                  @OA\Property(property="created_at", type="string", format="date-time", example="2023-01-01 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2023-01-01 12:00:00"),
+     *              ),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Student not found",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Student not found"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Validation error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Validation error"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error updating student",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error updating student"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $this->validate($request, [
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:students,email,' . $id,
+                'group_id' => 'sometimes|exists:groups,id',
+            ]);
+
+            $student = Student::findOrFail($id);
+
+            $data = $request->only(['name', 'email', 'group_id']);
+
+            $this->studentService->updateStudent($student, $data);
+
+            return response()->json(['message' => 'Student updated successfully', 'data' => $student], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Student not found'], 404);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error updating student', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/students/{id}",
+     *      operationId="deleteStudent",
+     *      tags={"Students"},
+     *      summary="Delete a student",
+     *      description="Delete a student and detach them from any associated groups.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="ID of the student to be deleted",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Student deleted successfully"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error deleting student",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error deleting student"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error"),
+     *          )
+     *      ),
+     * )
+     *
+     * Delete a student and detach them from any associated groups and lectures.
+     *
+     * @param  Student  $student
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteStudent(Student $student)
+    {
+        try {
+            $student->groups()->detach();
+            $student->attendedLectures()->detach();
+
+            $student->delete();
+
+            return response()->json(['message' => 'Student deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error deleting student', 'error' => $e->getMessage()], 500);
         }
     }
 }
