@@ -223,4 +223,45 @@ class LectionController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/lections/{lectureId}",
+     *     operationId="getLectureInfo",
+     *     tags={"Lections"},
+     *     summary="Get information about a specific lecture",
+     *     description="Retrieves details about a lecture including groups, attended students, and related information.",
+     *     @OA\Parameter(
+     *         name="lectureId",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the lecture",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Lecture not found"
+     *     )
+     * )
+     */
+
+    public function getLectureInfo($lectureId)
+    {
+        try {
+            $lecture = Lecture::with([
+                'attendedBy' => function ($query) {
+                    $query->with('groups');
+                }
+            ])->findOrFail($lectureId);
+
+            return response()->json(['lecture' => $lecture]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Lecture not found'], 404);
+        }
+    }
 }

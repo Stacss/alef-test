@@ -38,6 +38,8 @@ Route::get('/lections', 'LectionController@getAllLections');
 Route::post('/lections', 'LectionController@createLection');
 Route::put('/lections/{id}', 'LectionController@updateLecture');
 Route::delete('/lections/{id}', 'LectionController@deleteLecture');
+Route::get('/lections/{lectureId}', 'LectionController@getLectureInfo');
+
 
 
 
