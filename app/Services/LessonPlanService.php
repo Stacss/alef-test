@@ -47,13 +47,13 @@ class LessonPlanService
             return ['message' => 'Lecture not found in the group\'s plan'];
         }
 
-        $group->lectures()->detach($lectureId);
-
         $existingLesson = $group->lectures()->wherePivot('lesson_number', $lessonNumber)->first();
 
         if ($existingLesson) {
             return ['message' => 'Lesson number already exists for this group'];
         }
+
+        $group->lectures()->detach($lectureId);
 
         $group->lectures()->attach($lectureId, ['lesson_number' => $lessonNumber]);
 
