@@ -9,12 +9,6 @@ use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
-    protected $lessonPlanService;
-
-    public function __construct(LessonPlanService $lessonPlanService)
-    {
-        $this->lessonPlanService = $lessonPlanService;
-    }
     /**
      * @OA\Post(
      *      path="/api/groups",
@@ -259,7 +253,7 @@ class GroupController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api /groups/{groupId}/lectures",
+     *      path="/api/groups/{groupId}/lectures",
      *      operationId="addLectureToPlan",
      *      tags={"Group Lectures"},
      *      summary="Add a lecture to the study plan of a group",
@@ -315,7 +309,7 @@ class GroupController extends Controller
                 'lesson_number' => 'required|integer|min:1',
             ]);
 
-            $result = $this->lessonPlanService->addLectureToPlan(
+            $result = LessonPlanService::addLectureToPlan(
                 $groupId,
                 $request->input('lecture_id'),
                 $request->input('lesson_number')
@@ -327,6 +321,123 @@ class GroupController extends Controller
             return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error adding lecture to the plan', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/groups/{groupId}/lecture-plan",
+     *      operationId="getLecturePlanForGroup",
+     *      tags={"Group Lectures"},
+     *      summary="Get lecture plan for a specific group",
+     *      description="Retrieves the lecture plan (list of lectures) for a specific group.",
+     *      @OA\Parameter(
+     *          name="groupId",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the group",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Failed to retrieve lecture plan",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Failed to retrieve lecture plan"),
+     *              @OA\Property(property="error", type="string", example="Error message here")
+     *          )
+     *      )
+     * )
+     */
+    public function getLecturePlanForGroup($groupId)
+    {
+        try {
+            $group = Group::findOrFail($groupId);
+            $lectures = $group->lectures;
+
+            return response()->json(['lectures' => $lectures], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to retrieve lecture plan', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *      path="/api/groups/{groupId}/lectures/{lectureId}",
+     *      operationId="updateLectureInPlan",
+     *      tags={"Group Lectures"},
+     *      summary="Update a lecture in the group's study plan",
+     *      description="Update the lesson number of a specific lecture in the study plan of a group.",
+     *      @OA\Parameter(
+     *          name="groupId",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the group",
+     *          @OA\Schema(
+     *              type="integer",
+     *              format="int64"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="lectureId",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the lecture",
+     *          @OA\Schema(
+     *              type="integer",
+     *              format="int64"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Data for updating the lesson number",
+     *          @OA\JsonContent(
+     *              required={"lesson_number"},
+     *              @OA\Property(
+     *                  property="lesson_number",
+     *                  type="integer",
+     *                  format="int32",
+     *                  description="New lesson number for the lecture in the plan"
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Lecture updated in the plan successfully")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not Found - The group or lecture was not found",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Lecture not found in the group's plan")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Failed to update lecture in the plan"),
+     *              @OA\Property(property="error", type="string", example="Error details")
+     *          )
+     *      )
+     * )
+     */
+    public function updateLectureInPlan($groupId, $lectureId, Request $request)
+    {
+        try {
+
+            LessonPlanService::updateLessonInPlan($groupId, $lectureId, $request->input('lesson_number'));
+
+        } catch (\Exception $e) {
+            return ['message' => 'Failed to update lecture in the plan', 'error' => $e->getMessage()];
         }
     }
 
