@@ -15,7 +15,7 @@ class LessonPlanService
      * @return array - Результат операции
      *  - 'message' содержит информацию о результате операции
      */
-    public function addLectureToPlan($groupId, $lectureId, $lessonNumber)
+    public static function addLectureToPlan($groupId, $lectureId, $lessonNumber)
     {
         $group = Group::findOrFail($groupId);
         $existingLesson = $group->lectures()->wherePivot('lesson_number', $lessonNumber)->first();
@@ -27,5 +27,36 @@ class LessonPlanService
         $group->lectures()->attach($lectureId, ['lesson_number' => $lessonNumber]);
 
         return ['message' => 'Lecture added to the plan successfully'];
+    }
+
+    /**
+     * Обновляет учебный план класса, изменяя порядок или добавляя лекции.
+     *
+     * @param int $groupId Идентификатор класса.
+     * @param int $lectureId Идентификатор лекции.
+     * @param int $lessonNumber Номер урока, который нужно обновить.
+     *
+     * @return array Массив с сообщением о выполненной операции.
+     */
+    public static function updateLessonInPlan($groupId, $lectureId, $lessonNumber)
+    {
+        $group = Group::findOrFail($groupId);
+        $existingLesson = $group->lectures()->wherePivot('lecture_id', $lectureId)->first();
+
+        if (!$existingLesson) {
+            return ['message' => 'Lecture not found in the group\'s plan'];
+        }
+
+        $group->lectures()->detach($lectureId);
+
+        $existingLesson = $group->lectures()->wherePivot('lesson_number', $lessonNumber)->first();
+
+        if ($existingLesson) {
+            return ['message' => 'Lesson number already exists for this group'];
+        }
+
+        $group->lectures()->attach($lectureId, ['lesson_number' => $lessonNumber]);
+
+        return ['message' => 'Lecture updated in the plan successfully'];
     }
 }
