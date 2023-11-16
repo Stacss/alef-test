@@ -34,6 +34,11 @@ Route::post('/groups/{groupId}/lectures', 'GroupController@addLectureToPlan');
 Route::get('/groups/{groupId}/lecture-plan', 'GroupController@getLecturePlanForGroup');
 Route::put('/groups/{groupId}/lectures/{lectureId}', 'GroupController@updateLectureInPlan');
 
+Route::get('/lections', 'LectionController@getAllLections');
+Route::post('/lections', 'LectionController@createLection');
+
+
+
 
 
 
