@@ -434,12 +434,16 @@ class GroupController extends Controller
     {
         try {
 
-            LessonPlanService::updateLessonInPlan($groupId, $lectureId, $request->input('lesson_number'));
+            $result = LessonPlanService::updateLessonInPlan(
+                $groupId,
+                $lectureId,
+                $request->input('lesson_number')
+            );
+
+            return response()->json($result, $result['message'] ? 200 : 400);
 
         } catch (\Exception $e) {
             return ['message' => 'Failed to update lecture in the plan', 'error' => $e->getMessage()];
         }
     }
-
-
 }
