@@ -3,11 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Group;
+use App\Services\LessonPlanService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
+    protected $lessonPlanService;
+
+    public function __construct(LessonPlanService $lessonPlanService)
+    {
+        $this->lessonPlanService = $lessonPlanService;
+    }
     /**
      * @OA\Post(
      *      path="/api/groups",
@@ -249,4 +256,79 @@ class GroupController extends Controller
             return response()->json(['message' => 'Error retrieving group information', 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * @OA\Post(
+     *      path="/api /groups/{groupId}/lectures",
+     *      operationId="addLectureToPlan",
+     *      tags={"Group Lectures"},
+     *      summary="Add a lecture to the study plan of a group",
+     *      description="Adds a lecture to the study plan of a specific group.",
+     *      @OA\Parameter(
+     *          name="groupId",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the group",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Data required to add the lecture to the plan",
+     *          @OA\JsonContent(
+     *              required={"lecture_id", "lesson_number"},
+     *              @OA\Property(property="lecture_id", type="integer", example="1"),
+     *              @OA\Property(property="lesson_number", type="integer", example="3")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success message",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Lecture added to the plan successfully")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Validation error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Validation error"),
+     *              @OA\Property(property="errors", type="object", example={"lecture_id": {"The lecture_id field is required."}})
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error adding lecture to the plan",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error adding lecture to the plan"),
+     *              @OA\Property(property="error", type="string", example="Internal Server Error")
+     *          )
+     *      )
+     * )
+     */
+    public function addLectureToPlan(Request $request, $groupId)
+    {
+        try {
+            $this->validate($request, [
+                'lecture_id' => 'required|exists:lectures,id',
+                'lesson_number' => 'required|integer|min:1',
+            ]);
+
+            $result = $this->lessonPlanService->addLectureToPlan(
+                $groupId,
+                $request->input('lecture_id'),
+                $request->input('lesson_number')
+            );
+
+            return response()->json($result, $result['message'] ? 200 : 400);
+
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error adding lecture to the plan', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
 }
