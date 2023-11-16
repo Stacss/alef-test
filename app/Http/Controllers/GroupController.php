@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Group;
 use App\Services\LessonPlanService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -361,6 +362,8 @@ class GroupController extends Controller
             $lectures = $group->lectures;
 
             return response()->json(['lectures' => $lectures], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Lecture not found'], 404);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to retrieve lecture plan', 'error' => $e->getMessage()], 500);
         }
