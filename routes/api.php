@@ -31,6 +31,9 @@ Route::delete('/groups/{group}', 'GroupController@destroy');
 Route::get('/groups', 'GroupController@index');
 Route::get('/groups/{group}', 'GroupController@show');
 Route::post('/groups/{groupId}/lectures', 'GroupController@addLectureToPlan');
+Route::get('/groups/{groupId}/lecture-plan', 'GroupController@getLecturePlanForGroup');
+Route::put('/groups/{groupId}/lectures/{lectureId}', 'GroupController@updateLectureInPlan');
+
 
 
 
