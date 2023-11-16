@@ -8,9 +8,9 @@ use Illuminate\Support\Arr;
 class StudentService
 {
     /**
-     * Update a student's information and group association.
+     * Обновите информацию о студенте и классе.
      *
-     * @param  \App\Student  $student
+     * @param  Student  $student
      * @param  array  $data
      * @return void
      */
