@@ -10,6 +10,12 @@ use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
+    protected $lessonPlanService;
+
+    public function __construct(LessonPlanService $lessonPlanService)
+    {
+        $this->lessonPlanService = $lessonPlanService;
+    }
     /**
      * @OA\Post(
      *      path="/api/groups",
@@ -310,7 +316,7 @@ class GroupController extends Controller
                 'lesson_number' => 'required|integer|min:1',
             ]);
 
-            $result = LessonPlanService::addLectureToPlan(
+            $result = $this->lessonPlanService->addLectureToPlan(
                 $groupId,
                 $request->input('lecture_id'),
                 $request->input('lesson_number')
@@ -437,7 +443,7 @@ class GroupController extends Controller
     {
         try {
 
-            $result = LessonPlanService::updateLessonInPlan(
+            $result = $this->lessonPlanService->updateLessonInPlan(
                 $groupId,
                 $lectureId,
                 $request->input('lesson_number')

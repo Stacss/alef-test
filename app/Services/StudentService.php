@@ -8,7 +8,7 @@ use Illuminate\Support\Arr;
 class StudentService
 {
     /**
-     * Обновите информацию о студенте и классе.
+     * Update student and class information.
      *
      * @param  Student  $student
      * @param  array  $data

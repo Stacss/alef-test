@@ -6,16 +6,16 @@ use App\Group;
 class LessonPlanService
 {
     /**
-     * Добавляет лекцию в учебный план группы.
+     * Adds a lecture to the group's curriculum.
      *
-     * @param int $groupId - Идентификатор группы
-     * @param int $lectureId - Идентификатор лекции
-     * @param int $lessonNumber - Номер урока
+     * @param int $groupId - Group identifier
+     * @param int $lectureId - Lecture identifier
+     * @param int $lessonNumber - Lesson number
      *
-     * @return array - Результат операции
-     *  - 'message' содержит информацию о результате операции
+     * @return array - Operation result
+     *  - 'message' contains information about the operation result
      */
-    public static function addLectureToPlan($groupId, $lectureId, $lessonNumber)
+    public function addLectureToPlan($groupId, $lectureId, $lessonNumber)
     {
         $group = Group::findOrFail($groupId);
         $existingLesson = $group->lectures()->wherePivot('lesson_number', $lessonNumber)->first();
@@ -30,15 +30,15 @@ class LessonPlanService
     }
 
     /**
-     * Обновляет учебный план класса, изменяя порядок или добавляя лекции.
+     * Updates the class curriculum by changing the order or adding lectures.
      *
-     * @param int $groupId Идентификатор класса.
-     * @param int $lectureId Идентификатор лекции.
-     * @param int $lessonNumber Номер урока, который нужно обновить.
+     * @param int $groupId Class identifier.
+     * @param int $lectureId Lecture identifier.
+     * @param int $lessonNumber Lesson number to be updated.
      *
-     * @return array Массив с сообщением о выполненной операции.
+     * @return array An array with a message about the operation performed.
      */
-    public static function updateLessonInPlan($groupId, $lectureId, $lessonNumber)
+    public function updateLessonInPlan($groupId, $lectureId, $lessonNumber)
     {
         $group = Group::findOrFail($groupId);
         $existingLesson = $group->lectures()->wherePivot('lecture_id', $lectureId)->first();
